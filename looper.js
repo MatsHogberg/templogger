@@ -3,14 +3,16 @@ var schedule = require("node-schedule");
 var mongo = require('mongodb');
 var mongoClient = require("mongodb").MongoClient;
 var request = require("request");
+
+var secrets = require("./secrets");
 // mongodb 3.4
-var dbUrl = "mongodb://weatheradmin:haga280@weathercluster-shard-00-00-dobbb.mongodb.net:27017/temperature?ssl=true&authSource=admin";
-var weatherApiKey = "aad118cf783212643c937f267735537c";
+var dbUrl = secrets.secret.dbConnectionString; // "mongodb://weatheradmin:haga280@weathercluster-shard-00-00-dobbb.mongodb.net:27017/temperature?ssl=true&authSource=admin";
+var weatherApiKey = secrets.secret.weatherApiKey; //"aad118cf783212643c937f267735537c";
 var lon = 11.603785;
 var lat = 58.132253;
 var weatherUrl = "http://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + "&APPID=" + weatherApiKey + "&units=metric";
 
-
+var sec
 console.log(new Date().toISOString());
 var job = schedule.scheduleJob("0 * * * *", function(){callGetTemp(weatherUrl, dbUrl);});
 
