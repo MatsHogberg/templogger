@@ -12,7 +12,6 @@ var lon = 11.603785;
 var lat = 58.132253;
 var weatherUrl = "http://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + "&APPID=" + weatherApiKey + "&units=metric";
 
-var sec
 console.log(new Date().toISOString());
 var job = schedule.scheduleJob("0 * * * *", function(){callGetTemp(weatherUrl, dbUrl);});
 
