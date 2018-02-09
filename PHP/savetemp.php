@@ -17,11 +17,12 @@
         mysqli_close($db);
         $myObj->result ="OK";
         $myObj->dbResult = $r;
-        echo json_encode($myObj);
 
     }else{
         $myObj->result="Error in key";
     }
+
+    echo json_encode($myObj);
 
     function insert($db, $t, $l){
         $sql ="INSERT INTO temperature(temp, location) VALUES($t, '$l')";
