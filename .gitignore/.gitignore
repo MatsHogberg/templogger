@@ -58,4 +58,6 @@ typings/
 .env
 
 # secret settings
+secrets.*
 secrets.js
+secrets.php
