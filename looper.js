@@ -56,7 +56,7 @@ function callGetTemp(weatherUrl, dbUrl) {
 }
 
 function format90000Url(baseUrl, key, temp){
-    return baseUrl + "key=" + key + "&temp=" + temp + "&loc=ute";
+    return baseUrl + "?key=" + key + "&temp=" + temp + "&loc=ute";
 }
 
 function saveTempTo90000(url){
