@@ -1,6 +1,7 @@
 <?php
     require "secrets.php";
 
+    $myObj = new \stdClass();
     $myObj->result = "";
     $myObj->dbResult = "";
     if(isset($_GET['key']) && $_GET['key'] == $apiKey)
