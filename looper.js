@@ -8,6 +8,8 @@ var secrets = require("./secrets");
 // mongodb 3.4
 var dbUrl = secrets.secret.dbConnectionString; 
 var weatherApiKey = secrets.secret.weatherApiKey;
+var urlFor90000 = secrets.secret.saveWeather;
+var keyFor90000 = secrets.secret.saveKey;
 var lon = 11.603785;
 var lat = 58.132253;
 var weatherUrl = "http://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + "&APPID=" + weatherApiKey + "&units=metric";
@@ -34,6 +36,9 @@ function callGetTemp(weatherUrl, dbUrl) {
 
         console.log("Temp: " + temp + "\r\nTime: " + tajm);
 
+        var fullUrl90000 = format90000Url(urlFor90000,keyFor90000, temp);
+        saveTempTo90000(fullUrl90000);
+
         openDatabase(dbUrl).then(function(outdoorCollection){
             addTempReading(outdoorCollection, dbData).then(function(ok){
                 console.log("Insert done.");
@@ -47,6 +52,20 @@ function callGetTemp(weatherUrl, dbUrl) {
 
     }, function (err) {
         console.log("Error getting weather: " + err);
+    });
+}
+
+function format90000Url(baseUrl, key, temp){
+    return baseUrl + "key=" + key + "&temp=" + temp + "&loc=ute";
+}
+
+function saveTempTo90000(url){
+    request(url, function(error, response, body){
+        if(!error && response.statusCode === 200){
+            console.log("Saved to 90000");
+        }else{
+            console.log("Error saving to 90000: " + body);
+        }
     });
 }
 
