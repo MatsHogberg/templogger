@@ -6,25 +6,36 @@ var request = require("request");
 
 var secrets = require("./secrets");
 // mongodb 3.4
-var dbUrl = secrets.secret.dbConnectionString; // "mongodb://weatheradmin:haga280@weathercluster-shard-00-00-dobbb.mongodb.net:27017/temperature?ssl=true&authSource=admin";
-var weatherApiKey = secrets.secret.weatherApiKey; //"aad118cf783212643c937f267735537c";
+var dbUrl = secrets.secret.dbConnectionString; 
+var weatherApiKey = secrets.secret.weatherApiKey;
 var lon = 11.603785;
 var lat = 58.132253;
 var weatherUrl = "http://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + "&APPID=" + weatherApiKey + "&units=metric";
 
 console.log(new Date().toISOString());
 var job = schedule.scheduleJob("0 * * * *", function(){callGetTemp(weatherUrl, dbUrl);});
+var oldReading = 0;
 
-// callGetTemp(weatherUrl, dbUrl);
-
+/**
+ * Main function that's called every hour on the hour
+ * @param {string} weatherUrl - The URL to the weather API
+ * @param {string} dbUrl - The URL to the Atlas DB 
+ */
 function callGetTemp(weatherUrl, dbUrl) {
     getTemp(weatherUrl).then(function (weather) {
         var weatherData = JSON.parse(weather);
         var temp = weatherData.main.temp;
-        console.log("Temp: " + temp);
+        var tajm = new Date().toISOString();
+        var dbData = {
+            "temp": temp,
+            "time": tajm
+        };
+        oldReading = temp;
+
+        console.log("Temp: " + temp + "\r\nTime: " + tajm);
 
         openDatabase(dbUrl).then(function(outdoorCollection){
-            addTempReading(outdoorCollection, temp).then(function(ok){
+            addTempReading(outdoorCollection, dbData).then(function(ok){
                 console.log("Insert done.");
             },
             function(fail){
@@ -39,9 +50,14 @@ function callGetTemp(weatherUrl, dbUrl) {
     });
 }
 
-function addTempReading(col, temp){
+/**
+ * Stores a new row in a collection
+ * @param {db collection} col - The collection to which to add the data
+ * @param {json object} dbData - The data to add to the collection. 
+ */
+function addTempReading(col, dbData){
     return new Promise(function(resolve, reject){
-        col.insertOne({"temp": temp, "time": new Date().toISOString()}, function(err, result){
+        col.insertOne(dbData, function(err, result){
             if(err){
                 reject(err);
             }else{
@@ -51,6 +67,10 @@ function addTempReading(col, temp){
     });
 }
 
+/**
+ * Opens a connection to the Atlas DB and returns the collection named 'outdoor' in the db 'temperature'
+ * @param {string} url - The URI to the Mongo Atlas DB
+ */
 function openDatabase(url) {
     return new Promise(function(resolve, reject){
         mongoClient.connect(url, function(err, database){
@@ -64,6 +84,11 @@ function openDatabase(url) {
         });
     });
 };
+
+/**
+ * Fetches weather data from OPenWeather
+ * @param {string} weatherUrl - The URL (incl APPKEY) to the weather service 
+ */
 function getTemp(weatherUrl) {
     return new Promise(function (resolve, reject) {
         request(weatherUrl, function (error, response, body) {
